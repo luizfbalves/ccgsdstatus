@@ -1,5 +1,5 @@
 {
-  "name": "claude-gsd-band",
+  "name": "ccgsdstatus",
   "owner": { "name": "luizfbalves" },
-  "plugins": [{ "name": "gsd-band", "source": "./" }]
+  "plugins": [{ "name": "ccgsdstatus", "source": "./" }]
 }

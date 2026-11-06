@@ -7,12 +7,12 @@ import type { PhaseFiles } from './board'
 import { buildGrid, pulseCells } from './raster'
 import { SERVER } from './web'
 
-const board = atom({ plugin: 'gsd-band', key: 'board' } as const, null, { shape: 'board-4' })
-const isHidden = atom({ plugin: 'gsd-band', key: 'isHidden' } as const, false)
-const choices = atom({ plugin: 'gsd-band', key: 'choices' } as const, [])
-const selected = atom({ plugin: 'gsd-band', key: 'selected' } as const, null)
-const hint = atom({ plugin: 'gsd-band', key: 'hint' } as const, null)
-const activity = atom({ plugin: 'gsd-band', key: 'activity' } as const, null, { shape: 'activity-2' })
+const board = atom({ plugin: 'ccgsdstatus', key: 'board' } as const, null, { shape: 'board-4' })
+const isHidden = atom({ plugin: 'ccgsdstatus', key: 'isHidden' } as const, false)
+const choices = atom({ plugin: 'ccgsdstatus', key: 'choices' } as const, [])
+const selected = atom({ plugin: 'ccgsdstatus', key: 'selected' } as const, null)
+const hint = atom({ plugin: 'ccgsdstatus', key: 'hint' } as const, null)
+const activity = atom({ plugin: 'ccgsdstatus', key: 'activity' } as const, null, { shape: 'activity-2' })
 
 const GLYPH: Record<Mark, string> = { done: '✓', partial: '◆', ready: '○', blocked: '·' }
 const BAR = 20
@@ -137,7 +137,7 @@ const publishWeb = async ($: EngineInterface): Promise<void> => {
     boards: lastBoards.map(b => ({ ...b, id: b.workstream ?? '', percent: progress(b), pendencies: pendencies(b) })),
   })
   await $.http
-    .fetch(`${web.url}/state`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-gsd-band-token': web.token }, body })
+    .fetch(`${web.url}/state`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-ccgsdstatus-token': web.token }, body })
     .catch(() => undefined)
 }
 
@@ -225,7 +225,7 @@ const start = async ($: EngineInterface): Promise<void> => {
   if (started) return
   started = true
   await $.command.register({
-    name: 'gsd-band',
+    name: 'ccgsdstatus',
     description: 'Mostra ou esconde o painel GSD; com um nome, escolhe a workstream; web liga a página local',
     argumentHint: '[workstream | web]',
   })
@@ -254,7 +254,7 @@ export const register: Register = on => {
   })
 
   on('command.run', async ($, e, next) => {
-    if (e.command !== 'gsd-band') await noteGsd($, e.command, e.args)
+    if (e.command !== 'ccgsdstatus') await noteGsd($, e.command, e.args)
 
     return next(e)
   })
@@ -273,7 +273,7 @@ export const register: Register = on => {
     return result
   })
 
-  on('command.run', { command: 'gsd-band' }, async ($, e) => {
+  on('command.run', { command: 'ccgsdstatus' }, async ($, e) => {
     const name = e.args.trim()
     if (name === 'web') {
       if (web) {
@@ -286,7 +286,7 @@ export const register: Register = on => {
         void $.ui.toast(`Página do painel não subiu: ${err.message}`)
         return null
       })
-      return { text: url ? `Página do painel em ${url} (só leitura). /gsd-band web desliga.` : 'Página do painel não subiu: precisa de node ou bun no PATH.' }
+      return { text: url ? `Página do painel em ${url} (só leitura). /ccgsdstatus web desliga.` : 'Página do painel não subiu: precisa de node ou bun no PATH.' }
     }
     if (name) {
       await refresh($)

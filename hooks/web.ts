@@ -210,7 +210,7 @@ function render() {
     data.boards.length > 1 ? tabs() : null,
     add(el('section'), head, bar(b)),
     add(el('div', 'cols'), phases(b), add(el('aside'), activityCard(), pendingCard(b), stateCard(b))),
-    add(el('footer'), el('span', null, 'somente leitura'), el('span', null, location.origin), el('span', null, '/gsd-band web para desligar')));
+    add(el('footer'), el('span', null, 'somente leitura'), el('span', null, location.origin), el('span', null, '/ccgsdstatus web para desligar')));
 }
 
 function tick() {
@@ -245,7 +245,7 @@ const server = http.createServer((req, res) => {
   if (!/^(127\\.0\\.0\\.1|localhost):\\d+$/.test(host)) return res.writeHead(403).end()
   const path = (req.url || '/').split('?')[0]
   if (req.method === 'POST' && path === '/state') {
-    if (req.headers['x-gsd-band-token'] !== token) return res.writeHead(403).end()
+    if (req.headers['x-ccgsdstatus-token'] !== token) return res.writeHead(403).end()
     let body = ''
     req.on('data', chunk => { body += chunk; if (body.length > 8e6) req.destroy() })
     req.on('end', () => {

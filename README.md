@@ -1,8 +1,8 @@
-# gsd-band
+# ccgsdstatus
 
 Um painel fixo acima do prompt do Claude Code que mostra em que ponto está o milestone GSD do projeto. São as mesmas informações do `/gsd-manager`, sem precisar rodar o comando.
 
-![Painel gsd-band no terminal](docs/painel.png)
+![Painel ccgsdstatus no terminal](docs/painel.png)
 
 Em projetos sem milestone em andamento o painel não aparece e não ocupa espaço.
 
@@ -11,16 +11,16 @@ Em projetos sem milestone em andamento o painel não aparece e não ocupa espaç
 No prompt do Claude Code:
 
 ```
-/plugin install gsd-band --marketplace luizfbalves/claude-gsd-band
+/plugin install ccgsdstatus --marketplace luizfbalves/ccgsdstatus
 ```
 
 Pelo shell:
 
 ```
-claude plugin install gsd-band --marketplace luizfbalves/claude-gsd-band
+claude plugin install ccgsdstatus --marketplace luizfbalves/ccgsdstatus
 ```
 
-No app desktop, onde `/plugin` não funciona: clique em **+** ao lado do prompt, depois **Plugins** › **Add marketplace** com `luizfbalves/claude-gsd-band`, e então **Add plugin**.
+No app desktop, onde `/plugin` não funciona: clique em **+** ao lado do prompt, depois **Plugins** › **Add marketplace** com `luizfbalves/ccgsdstatus`, e então **Add plugin**.
 
 ## Como ler o painel
 
@@ -77,7 +77,7 @@ Com workstreams do GSD o projeto pode ter mais de um milestone em andamento, um 
 - sem isso, a workstream ativa do GSD (o ponteiro da sessão ou `.planning/active-workstream`), senão a primeira com milestone em progresso;
 - o nome da workstream aparece no cabeçalho, antes da versão;
 - com mais de uma opção aparece o botão **`⇄ <próxima>`**, que alterna entre elas;
-- `/gsd-band <nome>` escolhe uma direto (`/gsd-band raiz` para o `.planning/` raiz);
+- `/ccgsdstatus <nome>` escolhe uma direto (`/ccgsdstatus raiz` para o `.planning/` raiz);
 - o botão da próxima ação leva `--ws <nome>`.
 
 Workstreams com milestone encerrado ou sem fase pendente ficam fora da lista.
@@ -96,7 +96,7 @@ Nada é gravado no projeto, o mod só lê esses arquivos (e `*-VERIFICATION.md` 
 
 ## Página web
 
-`/gsd-band web` ou o botão **`↗ web`** abre uma página local com o mesmo painel e mais detalhes, para acompanhar no navegador:
+`/ccgsdstatus web` ou o botão **`↗ web`** abre uma página local com o mesmo painel e mais detalhes, para acompanhar no navegador:
 
 - abas para cada workstream com milestone em progresso;
 - a tabela de fases com D / P / E / V e a grade de planos da fase ativa;
@@ -105,11 +105,11 @@ Nada é gravado no projeto, o mod só lê esses arquivos (e `*-VERIFICATION.md` 
 
 A coluna **V** sai do `*-VERIFICATION.md` e do `*-UAT.md` da fase: verde aprovada, amarelo com pendência, ciano executada sem verificação, cinza ainda não.
 
-A página roda num servidor Node (ou Bun, se não houver Node) que o mod sobe em `http://127.0.0.1:4317`, ou em outra porta se essa estiver ocupada. Ela é só leitura e atualiza sozinha. O servidor só atende `127.0.0.1`/`localhost`, só aceita estado do mod (com um token gerado a cada vez) e encerra junto com a sessão. `/gsd-band web` de novo desliga.
+A página roda num servidor Node (ou Bun, se não houver Node) que o mod sobe em `http://127.0.0.1:4317`, ou em outra porta se essa estiver ocupada. Ela é só leitura e atualiza sozinha. O servidor só atende `127.0.0.1`/`localhost`, só aceita estado do mod (com um token gerado a cada vez) e encerra junto com a sessão. `/ccgsdstatus web` de novo desliga.
 
 ## Comando
 
-`/gsd-band` esconde ou mostra o painel na sessão atual. `/gsd-band <nome>` escolhe a workstream monitorada. `/gsd-band web` liga ou desliga a página local.
+`/ccgsdstatus` esconde ou mostra o painel na sessão atual. `/ccgsdstatus <nome>` escolhe a workstream monitorada. `/ccgsdstatus web` liga ou desliga a página local.
 
 ## Botões
 

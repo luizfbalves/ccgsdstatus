@@ -27,14 +27,14 @@ const LISTS: Record<string, ReturnType<typeof entry>[]> = {
 }
 
 const BAND = {
-  plugin: 'gsd-band',
+  plugin: 'ccgsdstatus',
   component: 'AbovePrompt',
   surface: 'terminal',
   props: { hasSurvey: false, isWorking: false, maxRows: 30, bodyColumns: 100, scroll: { offset: 0, bodyRows: 30 }, view: {} },
 } as const
 
 const seed = (on: Parameters<TestBody>[1], state = STATE) => {
-  on('command.register', () => ({ value: { command: 'gsd-band' } }))
+  on('command.register', () => ({ value: { command: 'ccgsdstatus' } }))
   on('clock.every', () => ({ value: undefined }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.cwd', () => ({ value: '/' }))
@@ -164,7 +164,7 @@ const seedWorkstreams = (on: Parameters<TestBody>[1], active = '', session = '')
   on('session.id', () => ({ value: 'abc-123' }))
   on('env.get', (_, e) => ({ value: e.name === 'TMPDIR' ? '/tmp/' : undefined }))
   on('fs.stat', () => ({ value: { kind: 'dir', size: 0, mtimeMs: 0, isLink: false, realPath: '/.planning' } }))
-  on('command.register', () => ({ value: { command: 'gsd-band' } }))
+  on('command.register', () => ({ value: { command: 'ccgsdstatus' } }))
   on('clock.every', () => ({ value: undefined }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.cwd', () => ({ value: '/' }))
@@ -215,13 +215,13 @@ test('botão troca o milestone monitorado e ignora workstream encerrada', async 
   await ui.unmount()
 })
 
-test('/gsd-band <nome> escolhe a workstream', async ($, on) => {
+test('/ccgsdstatus <nome> escolhe a workstream', async ($, on) => {
   seedWorkstreams(on, 'alfa')
   await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
   const ui = await $.ui.mount(DESKTOP)
 
-  expect((await run($, 'gsd-band', 'gama')).text).toContain('Opções: alfa, beta')
-  expect((await run($, 'gsd-band', 'beta')).text).toContain('monitorando beta')
+  expect((await run($, 'ccgsdstatus', 'gama')).text).toContain('Opções: alfa, beta')
+  expect((await run($, 'ccgsdstatus', 'beta')).text).toContain('monitorando beta')
   expect((await ui.find({ type: 'Text', text: /GSD ► MANAGER/ }))?.text).toContain('beta · v3.0')
   await ui.unmount()
 })
@@ -254,7 +254,7 @@ test('mostra o comando GSD em andamento e segue a workstream dele', async ($, on
   await ui.unmount()
 })
 
-test('/gsd-band web sobe a página local e manda o estado com token', async ($, on) => {
+test('/ccgsdstatus web sobe a página local e manda o estado com token', async ($, on) => {
   seed(on)
   on('session.id', () => ({ value: 'abc-123' }))
   on('env.get', () => ({ value: undefined }))
@@ -270,13 +270,13 @@ test('/gsd-band web sobe a página local e manda o estado com token', async ($, 
     return { value: { code: 0, signal: null } }
   })
   on('http.fetch', (_, e) => {
-    posts.push({ url: e.url, token: (e.init?.headers as Record<string, string>)['x-gsd-band-token'], body: String(e.init?.body) })
+    posts.push({ url: e.url, token: (e.init?.headers as Record<string, string>)['x-ccgsdstatus-token'], body: String(e.init?.body) })
     posted()
     return { value: { status: 204, ok: true, headers: {}, text: '' } }
   })
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
 
-  const { text } = await run($, 'gsd-band', 'web')
+  const { text } = await run($, 'ccgsdstatus', 'web')
   expect(text).toContain('http://127.0.0.1:4555')
   expect(argv[0]?.slice(0, 2)).toEqual(['node', '-e'])
   expect(posts[0]?.url).toBe('http://127.0.0.1:4555/state')
@@ -287,7 +287,7 @@ test('/gsd-band web sobe a página local e manda o estado com token', async ($, 
 })
 
 test('coluna V e pendências vêm do VERIFICATION.md e do UAT.md', async ($, on) => {
-  on('command.register', () => ({ value: { command: 'gsd-band' } }))
+  on('command.register', () => ({ value: { command: 'ccgsdstatus' } }))
   on('clock.every', () => ({ value: undefined }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.cwd', () => ({ value: '/' }))
@@ -316,7 +316,7 @@ test('coluna V e pendências vêm do VERIFICATION.md e do UAT.md', async ($, on)
     return { value: { status: 204, ok: true, headers: {}, text: '' } }
   })
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
-  await run($, 'gsd-band', 'web')
+  await run($, 'ccgsdstatus', 'web')
 
   const board = JSON.parse(bodies.at(-1) ?? '{}').boards[0]
   expect(board.rows[0].v).toBe('partial')

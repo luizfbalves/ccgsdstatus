@@ -39,7 +39,7 @@ export type Activity = {
 
 declare module 'claude-code' {
   interface PluginState {
-    'gsd-band': {
+    'ccgsdstatus': {
       board: Shaped<Board | null>
       isHidden: boolean
       /** Workstreams com milestone em progresso ('' é o `.planning/` raiz). */
