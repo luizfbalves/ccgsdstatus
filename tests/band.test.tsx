@@ -37,7 +37,7 @@ const seed = (on: Parameters<TestBody>[1], state = STATE) => {
   on('command.register', () => ({ value: { command: 'ccgsdstatus' } }))
   on('clock.every', () => ({ value: undefined }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
-  on('session.cwd', () => ({ value: '/' }))
+  on('session.root', () => ({ value: '/' }))
   on('fs.read', (_, e) => ({ value: e.path.endsWith('STATE.md') ? state : e.path.endsWith('active-workstream') ? '' : ROADMAP }))
   on('fs.list', (_, e) => ({ value: LISTS[e.path ?? ''] ?? [] }))
 }
@@ -95,6 +95,29 @@ test('aparece sem session.start (instalado com a sessão aberta)', async ($, on)
   }
 
   expect(raster).toBeTruthy()
+  await ui.unmount()
+})
+
+test('segue a raiz do projeto depois de /cd para um worktree', async ($, on) => {
+  let root = '/main'
+  on('command.register', () => ({ value: { command: 'ccgsdstatus' } }))
+  on('clock.every', () => ({ value: undefined }))
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('session.root', () => ({ value: root }))
+  on('classic.CwdChanged', () => ({}))
+  on('fs.read', (_, e) => ({ value: e.path.endsWith('STATE.md') ? (e.path.startsWith('/wt/') ? STATE : STATE.replace('executing', 'milestone_complete')) : e.path.endsWith('active-workstream') ? '' : ROADMAP }))
+  on('fs.list', (_, e) => ({ value: LISTS[(e.path ?? '').replace(/^\/wt/, '')] ?? [] }))
+  on('ui.render', ($, e) => {
+    const { Text } = $.ui.resolve(e)
+    return <Text>engine</Text>
+  })
+  await $.session.start({ cwd: '/main', surface: 'terminal', isInteractive: true })
+  const ui = await $.ui.mount(BAND)
+  expect(await ui.find({ type: 'Raster', key: 'board' })).toBeFalsy()
+
+  root = '/wt'
+  await $.classic.CwdChanged({ old_cwd: '/main', new_cwd: '/wt' })
+  expect(await ui.find({ type: 'Raster', key: 'board' })).toBeTruthy()
   await ui.unmount()
 })
 
@@ -167,7 +190,7 @@ const seedWorkstreams = (on: Parameters<TestBody>[1], active = '', session = '')
   on('command.register', () => ({ value: { command: 'ccgsdstatus' } }))
   on('clock.every', () => ({ value: undefined }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
-  on('session.cwd', () => ({ value: '/' }))
+  on('session.root', () => ({ value: '/' }))
   on('fs.read', (_, e) => {
     if (e.path === '/.planning/active-workstream') return { value: active }
     if (e.path === '/tmp/gsd-workstream-sessions/d4c4d48d0315d66c/claude-code-session-id-abc-123' && session) return { value: `${session}\n` }
@@ -290,7 +313,7 @@ test('coluna V e pendências vêm do VERIFICATION.md e do UAT.md', async ($, on)
   on('command.register', () => ({ value: { command: 'ccgsdstatus' } }))
   on('clock.every', () => ({ value: undefined }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
-  on('session.cwd', () => ({ value: '/' }))
+  on('session.root', () => ({ value: '/' }))
   const lists: Record<string, ReturnType<typeof entry>[]> = {
     '/.planning/phases': [entry('09-fundacao', 'dir'), entry('12-consulta', 'dir')],
     '/.planning/phases/09-fundacao': [entry('09-01-PLAN.md'), entry('09-01-SUMMARY.md'), entry('09-UAT.md'), entry('09-VERIFICATION.md')],

@@ -130,7 +130,7 @@ const refreshActivity = async ($: EngineInterface, command?: Pick<Activity, 'com
 const publishWeb = async ($: EngineInterface): Promise<void> => {
   if (!web) return
   const body = JSON.stringify({
-    project: await $.session.cwd(),
+    project: await $.session.root(),
     session: await $.session.id(),
     selected: (await read($, board))?.workstream ?? '',
     activity: await read($, activity),
@@ -187,7 +187,7 @@ const noteGsd = async ($: EngineInterface, command: string, args?: string): Prom
 }
 
 const refresh = async ($: EngineInterface): Promise<void> => {
-  const planning = `${(await $.session.cwd()).replace(/\/$/, '')}/.planning`
+  const planning = `${(await $.session.root()).replace(/\/$/, '')}/.planning`
   const boards = await loadBoards($, planning)
   lastBoards = boards
   const active = await readActive($, planning)
@@ -251,6 +251,14 @@ export const register: Register = on => {
     await refresh($)
 
     return next(e)
+  })
+
+  // /cd ou entrada num worktree muda a raiz do projeto: relê o .planning de lá.
+  on('classic.CwdChanged', async ($, e, next) => {
+    const result = await next(e)
+    await refresh($)
+
+    return result
   })
 
   on('command.run', async ($, e, next) => {
