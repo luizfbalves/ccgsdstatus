@@ -40,6 +40,10 @@ const seed = (on: Parameters<TestBody>[1], state = STATE) => {
   on('session.root', () => ({ value: '/' }))
   on('fs.read', (_, e) => ({ value: e.path.endsWith('STATE.md') ? state : e.path.endsWith('active-workstream') ? '' : ROADMAP }))
   on('fs.list', (_, e) => ({ value: LISTS[e.path ?? ''] ?? [] }))
+  on('ui.render', ($, e) => {
+    const { Text } = $.ui.resolve(e)
+    return <Text>engine</Text>
+  })
 }
 
 const DESKTOP = { ...BAND, surface: 'desktop' } as const
@@ -83,10 +87,6 @@ test('desenha o painel em Raster no terminal', async ($, on) => {
 test('aparece sem session.start (instalado com a sessão aberta)', async ($, on) => {
   seed(on)
   on('clock.after', () => ({ value: undefined }))
-  on('ui.render', ($, e) => {
-    const { Text } = $.ui.resolve(e)
-    return <Text>engine</Text>
-  })
   const ui = await $.ui.mount(BAND)
   let raster = await ui.find({ type: 'Raster', key: 'board' })
   for (let i = 0; i < 50 && !raster; i++) {
@@ -121,6 +121,16 @@ test('segue a raiz do projeto depois de /cd para um worktree', async ($, on) => 
   await ui.unmount()
 })
 
+test('mantém o que outro mod desenha abaixo do painel', async ($, on) => {
+  seed(on)
+  await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+  const ui = await $.ui.mount(BAND)
+
+  expect(await ui.find({ type: 'Raster', key: 'board' })).toBeTruthy()
+  expect((await ui.find({ type: 'Text', text: 'engine' }))?.text).toBe('engine')
+  await ui.unmount()
+})
+
 test('mostra fases do milestone em progresso', async ($, on) => {
   seed(on)
   await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
@@ -136,10 +146,6 @@ test('mostra fases do milestone em progresso', async ($, on) => {
 
 test('some sem milestone em progresso', async ($, on) => {
   seed(on, STATE.replace('executing', 'milestone_complete'))
-  on('ui.render', ($, e) => {
-    const { Text } = $.ui.resolve(e)
-    return <Text>engine</Text>
-  })
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
   const ui = await $.ui.mount(BAND)
 
@@ -203,6 +209,10 @@ const seedWorkstreams = (on: Parameters<TestBody>[1], active = '', session = '')
   on('fs.list', (_, e) => ({
     value: e.path === '/.planning/workstreams' ? [entry('alfa', 'dir'), entry('beta', 'dir'), entry('gama', 'dir')] : [],
   }))
+  on('ui.render', ($, e) => {
+    const { Text } = $.ui.resolve(e)
+    return <Text>engine</Text>
+  })
 }
 
 test('segue a workstream ativa do GSD e passa --ws para a próxima ação', async ($, on) => {

@@ -324,6 +324,14 @@ export const register: Register = on => {
     }
 
     const { Box, Button, Text } = $.ui.resolve(e)
+    // Outros mods também desenham aqui (ex.: ccstatus): o que eles desenham vai abaixo do painel.
+    const below = await next(e)
+    const withBelow = (panel: ReturnType<typeof h>) => (
+      <Box flexDirection="column">
+        {panel}
+        {below}
+      </Box>
+    )
     const ids = await read($, choices)
     const current = data.workstream ?? ''
     const following = ids[(ids.indexOf(current) + 1) % ids.length] ?? current
@@ -390,7 +398,7 @@ export const register: Register = on => {
     if (Raster) {
       const grid = buildGrid(data, e.props.bodyColumns, e.props.maxRows < data.rows.length + (doing ? 7 : 6))
 
-      return (
+      return withBelow(
         <Box flexDirection="column" marginBottom={1}>
           {header}
           <Raster key="board" columns={grid.columns} rows={grid.rows} cells={grid.cells} />
@@ -398,7 +406,7 @@ export const register: Register = on => {
       )
     }
 
-    return (
+    return withBelow(
       <Box flexDirection="column" marginBottom={1}>
         {header}
         <Box>
