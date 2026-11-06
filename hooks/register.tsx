@@ -218,20 +218,29 @@ const label = (id: string): string => id || 'raiz'
 const markColor = (mark: Mark): string | undefined =>
   mark === 'done' ? 'green' : mark === 'partial' ? 'yellow' : mark === 'ready' ? 'cyan' : undefined
 
+// Liga comando, leitura e timers uma vez. O session.start não roda quando o mod
+// é instalado ou recarregado com a sessão já aberta, então o primeiro render também liga.
+let started = false
+const start = async ($: EngineInterface): Promise<void> => {
+  if (started) return
+  started = true
+  await $.command.register({
+    name: 'gsd-band',
+    description: 'Mostra ou esconde o painel GSD; com um nome, escolhe a workstream; web liga a página local',
+    argumentHint: '[workstream | web]',
+  })
+  await refresh($)
+  $.clock.every(15000, () => refresh($))
+  $.clock.every(TICK, () => {
+    if (!pulse) return
+    frame++
+    void $.ui.blit({ requestId: pulse.requestId, key: 'pulse', cells: pulseCells(frame, pulse.isWorking) }).catch(() => undefined)
+  })
+}
+
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
-    await $.command.register({
-      name: 'gsd-band',
-      description: 'Mostra ou esconde o painel GSD; com um nome, escolhe a workstream; web liga a página local',
-      argumentHint: '[workstream | web]',
-    })
-    await refresh($)
-    $.clock.every(15000, () => refresh($))
-    $.clock.every(TICK, () => {
-      if (!pulse) return
-      frame++
-      void $.ui.blit({ requestId: pulse.requestId, key: 'pulse', cells: pulseCells(frame, pulse.isWorking) }).catch(() => undefined)
-    })
+    await start($)
 
     return next(e)
   })
@@ -298,6 +307,8 @@ export const register: Register = on => {
   })
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+    // O render não grava estado: a leitura inicial vai num timer.
+    if (!started) $.clock.after(0, () => void start($))
     const data = await read($, board)
     if (e.props.hasSurvey || data === null || (await read($, isHidden))) {
       pulse = null

@@ -80,6 +80,24 @@ test('desenha o painel em Raster no terminal', async ($, on) => {
   await ui.unmount()
 })
 
+test('aparece sem session.start (instalado com a sessão aberta)', async ($, on) => {
+  seed(on)
+  on('clock.after', () => ({ value: undefined }))
+  on('ui.render', ($, e) => {
+    const { Text } = $.ui.resolve(e)
+    return <Text>engine</Text>
+  })
+  const ui = await $.ui.mount(BAND)
+  let raster = await ui.find({ type: 'Raster', key: 'board' })
+  for (let i = 0; i < 50 && !raster; i++) {
+    await new Promise(r => setTimeout(r, 10))
+    raster = await ui.find({ type: 'Raster', key: 'board' })
+  }
+
+  expect(raster).toBeTruthy()
+  await ui.unmount()
+})
+
 test('mostra fases do milestone em progresso', async ($, on) => {
   seed(on)
   await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
